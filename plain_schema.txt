@@ -1,0 +1,25 @@
+Users -> id(int), name(string), email(string), password_hash(string), role(string), verified_at(datetime with timezone)
+
+UserLogs -> id(int), user_id(int), email(string), logged_in_at(datetime with timezone), role(string)
+
+
+
+Student -> id(int), student_uid(string), full_name(string), email(string), date_of_birth(date), programme_id(int), academic_year(int), enrolment_status(string), has_overdue_balance(boolean)
+
+Programmes -> id(int), p_name(string), p_fee(float), p_discount, p_coupon, p_disc_limit
+
+StudentEnrollment -> id(int), student_id(int), programme_id(int), enrolled_year(int), enrolled_status(string), fee_total(float), fee_paid(float), fee_due(float), last_payment_date(date)
+
+
+
+
+PaymentTransaction -> id(int), student_id(int), programme_id(int), amount(float), payment_date(date), reference_no(string)
+
+
+
+
+Assessment -> id(int), title(string), programme_id(int), module_name(string), deadline(datetime), extended_deadline(datetime), total_marks(float), highest_grade(float), authored_by(int)-> staff user_id
+
+AssessmentSubmission -> id(int), student_id(int), assessment_id(int), file_path(string), submission_time(datetime), is_late(boolean), resubmission_count(int)
+
+AssessmentResult -> id(int), student_id(int), assessment_id(int), numeric_grade(float), grade_classification(string), is_published(boolean)

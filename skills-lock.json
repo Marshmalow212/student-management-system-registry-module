@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "skills": {
+    "prisma-cli": {
+      "source": "prisma/skills",
+      "sourceType": "github",
+      "skillPath": "prisma-cli/SKILL.md",
+      "computedHash": "129e77cba93984b88d66cf0f66d5788f5487431f17f189a1ab2d839976874e3b"
+    },
+    "prisma-client-api": {
+      "source": "prisma/skills",
+      "sourceType": "github",
+      "skillPath": "prisma-client-api/SKILL.md",
+      "computedHash": "cbbabff961c8e16b2d59f8c1ffb4e7e20be52154e778ab95121e0211d6d09969"
+    },
+    "prisma-compute": {
+      "source": "prisma/skills",
+      "sourceType": "github",
+      "skillPath": "prisma-compute/SKILL.md",
+      "computedHash": "8d6053aefdf0b7c80e981e93c1300d617292efb6a5b0bdd826bc85e47431f3e3"
+    },
+    "prisma-database-setup": {
+      "source": "prisma/skills",
+      "sourceType": "github",
+      "skillPath": "prisma-database-setup/SKILL.md",
+      "computedHash": "6a991a2530a6da7131e3fc71c353e8278702d0146b8b6e1d2fdfc2d3d0a21bd2"
+    },
+    "prisma-driver-adapter-implementation": {
+      "source": "prisma/skills",
+      "sourceType": "github",
+      "skillPath": "prisma-driver-adapter-implementation/SKILL.md",
+      "computedHash": "cc487f1bf36f616ddb3a9478b3527d288dd706d77a9e5dbee9af52dca1eee8e4"
+    },
+    "prisma-mongodb-upgrade": {
+      "source": "prisma/skills",
+      "sourceType": "github",
+      "skillPath": "prisma-mongodb-upgrade/SKILL.md",
+      "computedHash": "b94149ad5f1ec269dfd717b321538de6d39943b2ae6721a0d82302057f57ae18"
+    },
+    "prisma-next": {
+      "source": "prisma/prisma-next",
+      "sourceType": "github",
+      "skillPath": "skills/prisma-next/SKILL.md",
+      "computedHash": "0e12f86c73b9dad3e0de4326ac0f6ee804cb88bf9d515119268a79944adbf79f"
+    },
+    "prisma-next-migrations": {
+      "source": "prisma/prisma-next",
+      "sourceType": "github",
+      "skillPath": "skills/prisma-next-migrations/SKILL.md",
+      "computedHash": "8569cff34ec761f4f486fd5deebadc02bdb975124c57b6e8983852fe727c7b52"
+    },
+    "prisma-postgres": {
+      "source": "prisma/skills",
+      "sourceType": "github",
+      "skillPath": "prisma-postgres/SKILL.md",
+      "computedHash": "0422727e18019add9208b86ce862964025acc011ff31fba1d59a01b836bd6272"
+    },
+    "prisma-postgres-setup": {
+      "source": "prisma/skills",
+      "sourceType": "github",
+      "skillPath": "prisma-postgres-setup/SKILL.md",
+      "computedHash": "5dbcf5a488d7cb7136340b86dcf781d6d92cf793f92c105ef644ac31ccac4d3b"
+    },
+    "prisma-upgrade-v7": {
+      "source": "prisma/skills",
+      "sourceType": "github",
+      "skillPath": "prisma-upgrade-v7/SKILL.md",
+      "computedHash": "0e07dc2831f86cf27627df914db43d862b0fc75d72c1f9070434aab7940bad7c"
+    },
+    "shadcn": {
+      "source": "shadcn/ui",
+      "sourceType": "github",
+      "skillPath": "skills/shadcn/SKILL.md",
+      "computedHash": "c1a68ee06a668aced9ab2b5fbdea5f989864123794eb2e056b339a072dbb7f10"
+    },
+    "tailwind-design-system": {
+      "source": "wshobson/agents",
+      "sourceType": "github",
+      "skillPath": "plugins/frontend-mobile-development/skills/tailwind-design-system/SKILL.md",
+      "computedHash": "cd61afd28f594e8b6712b61749209cbb4466e3eec4e4223793bbd97fc85c1b63"
+    },
+    "typescript-advanced-types": {
+      "source": "wshobson/agents",
+      "sourceType": "github",
+      "skillPath": "plugins/javascript-typescript/skills/typescript-advanced-types/SKILL.md",
+      "computedHash": "8cbf2bf600f392d7260e476e3202932a876e2281cda3b15a8b6a5a43f383252d"
+    },
+    "webapp-testing": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "skillPath": "skills/webapp-testing/SKILL.md",
+      "computedHash": "ad5b1fc52807e9afa4635e59218a026b164dc58b6c3f41b0f7c644dcd6ccf572"
+    }
+  }
+}

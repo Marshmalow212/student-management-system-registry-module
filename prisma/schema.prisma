@@ -1,0 +1,47 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../repository/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// Application user. `role` is persisted as an Int (0..3) and mapped at the
+/// application layer via `lib/auth/roles.ts` so the schema stays free of enum
+/// types. Values: 0=STUDENT, 1=STAFF, 2=REGISTRAR, 3=ADMIN.
+model User {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  name         String
+  passwordHash String
+  role         Int       @default(0)
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  logs UserLog[]
+
+  @@index([role])
+}
+
+/// Authentication/audit log. `eventType` is a free-form string sourced from
+/// the `LogEvent` const in `lib/auth/log-events.ts`. `userId` is nullable so
+/// failed login attempts with an unknown email can still be recorded.
+model UserLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  eventType String
+  ipAddress String?
+  userAgent String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([eventType, createdAt])
+}
