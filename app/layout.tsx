@@ -2,10 +2,11 @@ import { Geist, Geist_Mono, Public_Sans } from "next/font/google"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
-import { ReduxProvider } from "@/redux/provider"
 import { cn } from "@/lib/utils"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { prisma } from "@/lib/prisma"
+import StoreProvider from "./StoreProvider"
+import { Toaster } from "@/components/ui/toast"
 
 const APP_ENV = process.env.APP_ENV || "development"
 
@@ -42,9 +43,10 @@ export default function RootLayout({
     >
       <body>
         <TooltipProvider>
-          <ReduxProvider>
+          <StoreProvider>
             <ThemeProvider>{children}</ThemeProvider>
-          </ReduxProvider>
+          </StoreProvider>
+            <Toaster />
         </TooltipProvider>
       </body>
     </html>
