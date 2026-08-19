@@ -1,0 +1,3 @@
+-- The redesigned assessment migration owns all assessment/submission fields.
+-- This migration is retained as an empty compatibility marker for environments
+-- that already recorded the previous workflow migration.

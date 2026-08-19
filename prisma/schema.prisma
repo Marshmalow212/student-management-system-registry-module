@@ -3,7 +3,7 @@
 
 generator client {
   provider = "prisma-client"
-  output   = "../repository/prisma"
+  output   = "../db/prisma/"
 }
 
 datasource db {
@@ -20,17 +20,184 @@ model User {
   passwordHash String
   role         Int       @default(0)
   isActive     Boolean   @default(true)
+  studentId    String?   @unique
+  isVerified   Boolean   @default(true)
+  otpHash      String?
+  otpExpiresAt DateTime?
+  otpAttempts  Int       @default(0)
+  otpSentAt    DateTime?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
-  logs UserLog[]
+  logs               UserLog[]
+  student            Student?
+  createdEnrollments StudentEnrollment[]
+  receivedPayments   PaymentTransaction[]
+  assessments        Assessment[]
+  gradedSubmissions  AssessmentSubmission[]
 
   @@index([role])
 }
 
-/// Authentication/audit log. `eventType` is a free-form string sourced from
-/// the `LogEvent` const in `lib/auth/log-events.ts`. `userId` is nullable so
-/// failed login attempts with an unknown email can still be recorded.
+enum ProgrammeStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+/// Registry record for a student. Authentication remains owned by User.
+/// Student-facing identity is `studentUid`; retain the legacy User link while
+/// registry routes still use it.
+model Student {
+  id                Int       @id @default(autoincrement())
+  studentUid        String    @unique
+  fullName          String
+  email             String    @unique
+  dateOfBirth       DateTime? @db.Date
+  academicYear      Int?
+  status            Int       @default(0)
+  hasOverdueBalance Boolean   @default(false)
+  userId            Int?      @unique
+  programmeId       Int?
+  deletedAt         DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  user        User?                  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  programme   Programme?             @relation(fields: [programmeId], references: [id], onDelete: SetNull)
+  enrollments StudentEnrollment[]
+  submissions AssessmentSubmission[]
+
+  @@index([status, deletedAt])
+  @@index([programmeId, status])
+  @@index([fullName])
+}
+
+/// Catalogue data only. Enrolment and payment workflows are separate features.
+model Programme {
+  id          Int             @id @default(autoincrement())
+  name        String          @unique
+  fee         Decimal         @db.Decimal(12, 2)
+  discount    Decimal         @default(0) @db.Decimal(12, 2)
+  coupon      String?
+  couponLimit Int?
+  couponUsed  Int             @default(0)
+  status      ProgrammeStatus @default(ACTIVE)
+  deletedAt   DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  students    Student[]
+  enrollments StudentEnrollment[]
+  assessments Assessment[]
+
+  @@index([status, deletedAt])
+  @@index([coupon, status, deletedAt])
+}
+
+/// Financial snapshot for one student taking one programme in one academic year.
+/// Snapshot fields are never changed when catalogue pricing or coupons change.
+model StudentEnrollment {
+  id               Int       @id @default(autoincrement())
+  reference        String    @unique
+  studentId        Int
+  programmeId      Int
+  enrolledYear     Int
+  status           Int       @default(0)
+  feeSnapshot      Decimal?  @db.Decimal(12, 2)
+  discountSnapshot Decimal?  @db.Decimal(12, 2)
+  feeTotal         Decimal   @db.Decimal(12, 2)
+  dueDate          DateTime? @db.Date
+  createdById      Int
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  student   Student              @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  programme Programme            @relation(fields: [programmeId], references: [id], onDelete: Restrict)
+  createdBy User                 @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  payments  PaymentTransaction[]
+
+  @@unique([studentId, programmeId, enrolledYear])
+  @@index([studentId, status])
+  @@index([programmeId, enrolledYear])
+  @@index([status, dueDate])
+}
+
+/// Immutable internal payment ledger entry. No provider, refund, or void semantics are modeled yet.
+model PaymentTransaction {
+  idempotencyKey String   @unique
+  id             Int      @id @default(autoincrement())
+  reference      String   @unique
+  enrollmentId   Int
+  amount         Decimal  @db.Decimal(12, 2)
+  currency       String   @default("USD") @db.VarChar(3)
+  paymentDate    DateTime @default(now())
+  receivedById   Int
+  createdAt      DateTime @default(now())
+  note           String?
+
+  enrollment StudentEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Restrict)
+  receivedBy User              @relation(fields: [receivedById], references: [id], onDelete: Restrict)
+
+  @@index([enrollmentId, paymentDate])
+  @@index([receivedById, createdAt])
+}
+
+/// Assessment ownership is programme-scoped. `subjectName` is intentionally
+/// a scalar until the registry has a first-class module/course entity.
+model Assessment {
+  id                Int       @id @default(autoincrement())
+  title             String
+  subjectName       String?
+  moduleName        String?
+  programmeId       Int
+  createdById       Int
+  dueDate           DateTime
+  extendedDeadline  DateTime?
+  maxMarks          Decimal   @db.Decimal(10, 2)
+  totalMarks        Decimal?  @db.Decimal(10, 2)
+  highestGrade      String?
+  resubmissionLimit Int       @default(0)
+  status            Int       @default(0)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  programme   Programme              @relation(fields: [programmeId], references: [id], onDelete: Restrict)
+  createdBy   User                   @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  submissions AssessmentSubmission[]
+
+  @@index([programmeId, status, dueDate])
+  @@index([createdById, status])
+}
+
+model AssessmentSubmission {
+  id             Int       @id @default(autoincrement())
+  assessmentId   Int
+  studentId      Int
+  submittedAt    DateTime  @default(now())
+  isLate         Boolean   @default(false)
+  status         Int       @default(0)
+  resubmissions  Int       @default(0)
+  file_path      String?
+  marks          Decimal?  @db.Decimal(10, 2)
+  classification String?
+  resultStatus   Int       @default(0)
+  isPublished    Boolean   @default(false)
+  gradedById     Int?
+  gradedAt       DateTime?
+  publishedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Restrict)
+  student    Student    @relation(fields: [studentId], references: [id], onDelete: Restrict)
+  gradedBy   User?      @relation(fields: [gradedById], references: [id], onDelete: SetNull)
+
+  @@unique([assessmentId, studentId])
+  @@index([studentId, submittedAt])
+  @@index([assessmentId, status])
+}
+
 model UserLog {
   id        Int      @id @default(autoincrement())
   userId    Int?

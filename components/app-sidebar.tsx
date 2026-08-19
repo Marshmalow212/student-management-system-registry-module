@@ -1,191 +1,351 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 
-import { NavDocuments } from "@/components/nav-documents"
-import { NavMain } from "@/components/nav-main"
-import { NavSecondary } from "@/components/nav-secondary"
-import { NavUser } from "@/components/nav-user"
+import {
+  BadgeCheck,
+  Bell,
+  ChevronsUpDown,
+  CreditCard,
+  LogOut,
+  Sparkles,
+} from "lucide-react";
+
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
+  SidebarGroup,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { DashboardSquare01Icon, Menu01Icon, ChartHistogramIcon, Folder01Icon, UserGroupIcon, Camera01Icon, File01Icon, Settings05Icon, HelpCircleIcon, SearchIcon, Database01Icon, Analytics01Icon, CommandIcon } from "@hugeicons/core-free-icons"
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+  SidebarRail,
+  SidebarGroupLabel,
+} from "@/components/ui/sidebar";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  LayoutBottomIcon,
+  DashboardSquare01Icon,
+  StudentIcon,
+  BookOpen01Icon,
+  UserGroupIcon,
+  FileAttachmentIcon,
+  ChartHistogramIcon,
+  DocumentValidationIcon,
+  Certificate01Icon,
+  MoneyBag02Icon,
+} from "@hugeicons/core-free-icons";
 
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  navMain: [
-    {
-      title: "Dashboard",
-      url: "#",
-      icon: (
-        <HugeiconsIcon icon={DashboardSquare01Icon} strokeWidth={2} />
-      ),
-    },
-    {
-      title: "Lifecycle",
-      url: "#",
-      icon: (
-        <HugeiconsIcon icon={Menu01Icon} strokeWidth={2} />
-      ),
-    },
-    {
-      title: "Analytics",
-      url: "#",
-      icon: (
-        <HugeiconsIcon icon={ChartHistogramIcon} strokeWidth={2} />
-      ),
-    },
-    {
-      title: "Projects",
-      url: "#",
-      icon: (
-        <HugeiconsIcon icon={Folder01Icon} strokeWidth={2} />
-      ),
-    },
-    {
-      title: "Team",
-      url: "#",
-      icon: (
-        <HugeiconsIcon icon={UserGroupIcon} strokeWidth={2} />
-      ),
-    },
-  ],
-  navClouds: [
-    {
-      title: "Capture",
-      icon: (
-        <HugeiconsIcon icon={Camera01Icon} strokeWidth={2} />
-      ),
-      isActive: true,
-      url: "#",
-      items: [
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+
+export type NavigationItem = {
+  title: string;
+  url: string;
+  icon: typeof DashboardSquare01Icon;
+  items: { title: string; url: string; icon: typeof DashboardSquare01Icon }[];
+};
+
+const dashboardItem = {
+  title: "Dashboard",
+  url: "/dashboard",
+  icon: DashboardSquare01Icon,
+  items: [],
+};
+
+export function getNavigationForRole(role: number): {
+  navMain: NavigationItem[];
+  portalTitle: string;
+} {
+  if (role === 0) {
+    return {
+      portalTitle: "Student Portal",
+      navMain: [
         {
-          title: "Active Proposals",
-          url: "#",
+          title: "Dashboard",
+          url: "/student/dashboard",
+          icon: DashboardSquare01Icon,
+          items: [],
         },
         {
-          title: "Archived",
+          title: "Academic",
           url: "#",
-        },
-      ],
-    },
-    {
-      title: "Proposal",
-      icon: (
-        <HugeiconsIcon icon={File01Icon} strokeWidth={2} />
-      ),
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
-        },
-        {
-          title: "Archived",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Prompts",
-      icon: (
-        <HugeiconsIcon icon={File01Icon} strokeWidth={2} />
-      ),
-      url: "#",
-      items: [
-        {
-          title: "Active Proposals",
-          url: "#",
+          icon: DocumentValidationIcon,
+          items: [
+            {
+              title: "My Assessments",
+              url: "/student/assessments",
+              icon: FileAttachmentIcon,
+            },
+            {
+              title: "My Results",
+              url: "/student/results",
+              icon: ChartHistogramIcon,
+            },
+            {
+              title: "My Transcript",
+              url: "/student/transcript",
+              icon: Certificate01Icon,
+            },
+          ],
         },
         {
-          title: "Archived",
+          title: "Financial",
           url: "#",
+          icon: MoneyBag02Icon,
+          items: [
+            {
+              title: "My Payments",
+              url: "/student/payments",
+              icon: MoneyBag02Icon,
+            },
+          ],
         },
       ],
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "#",
-      icon: (
-        <HugeiconsIcon icon={Settings05Icon} strokeWidth={2} />
-      ),
-    },
-    {
-      title: "Get Help",
-      url: "#",
-      icon: (
-        <HugeiconsIcon icon={HelpCircleIcon} strokeWidth={2} />
-      ),
-    },
-    {
-      title: "Search",
-      url: "#",
-      icon: (
-        <HugeiconsIcon icon={SearchIcon} strokeWidth={2} />
-      ),
-    },
-  ],
-  documents: [
-    {
-      name: "Data Library",
-      url: "#",
-      icon: (
-        <HugeiconsIcon icon={Database01Icon} strokeWidth={2} />
-      ),
-    },
-    {
-      name: "Reports",
-      url: "#",
-      icon: (
-        <HugeiconsIcon icon={Analytics01Icon} strokeWidth={2} />
-      ),
-    },
-    {
-      name: "Word Assistant",
-      url: "#",
-      icon: (
-        <HugeiconsIcon icon={File01Icon} strokeWidth={2} />
-      ),
-    },
-  ],
+    };
+  }
+
+  if (role === 1) {
+    return {
+      portalTitle: "Staff Portal",
+      navMain: [
+        dashboardItem,
+        {
+          title: "Academic",
+          url: "#",
+          icon: DocumentValidationIcon,
+          items: [
+            {
+              title: "Assessments",
+              url: "/dashboard/assessments",
+              icon: FileAttachmentIcon,
+            },
+          ],
+        },
+      ],
+    };
+  }
+
+  if (role === 2) {
+    return {
+      portalTitle: "Registrar Portal",
+      navMain: [
+        dashboardItem,
+        {
+          title: "Registration",
+          url: "#",
+          icon: UserGroupIcon,
+          items: [
+            {
+              title: "Students",
+              url: "/dashboard/students",
+              icon: StudentIcon,
+            },
+            {
+              title: "Programmes",
+              url: "/dashboard/programmes",
+              icon: BookOpen01Icon,
+            },
+          ],
+        },
+        {
+          title: "Financial",
+          url: "#",
+          icon: MoneyBag02Icon,
+          items: [
+            {
+              title: "Enrollment",
+              url: "/dashboard/enrollments",
+              icon: FileAttachmentIcon,
+            },
+            {
+              title: "Payments",
+              url: "/dashboard/payments",
+              icon: MoneyBag02Icon,
+            },
+          ],
+        },
+      ],
+    };
+  }
+
+  return {
+    portalTitle: "Admin Portal",
+    navMain: [
+      dashboardItem,
+      {
+        title: "Registration",
+        url: "#",
+        icon: UserGroupIcon,
+        items: [
+          { title: "Students", url: "/dashboard/students", icon: StudentIcon },
+          {
+            title: "Programmes",
+            url: "/dashboard/programmes",
+            icon: BookOpen01Icon,
+          },
+        ],
+      },
+      {
+        title: "Financial",
+        url: "#",
+        icon: MoneyBag02Icon,
+        items: [
+          {
+            title: "Enrollment",
+            url: "/dashboard/enrollments",
+            icon: FileAttachmentIcon,
+          },
+          {
+            title: "Payments",
+            url: "/dashboard/payments",
+            icon: MoneyBag02Icon,
+          },
+        ],
+      },
+      {
+        title: "Academic",
+        url: "#",
+        icon: DocumentValidationIcon,
+        items: [
+          {
+            title: "Assessments",
+            url: "/dashboard/assessments",
+            icon: FileAttachmentIcon,
+          },
+          {
+            title: "Reports",
+            url: "/dashboard/reports/results",
+            icon: ChartHistogramIcon,
+          },
+        ],
+      },
+      {
+        title: "Administration",
+        url: "#",
+        icon: UserGroupIcon,
+        items: [
+          {
+            title: "Account management",
+            url: "/dashboard/accounts",
+            icon: UserGroupIcon,
+          },
+        ],
+      },
+    ],
+  };
 }
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+
+export function AppSidebar({
+  userRole,
+  ...props
+}: React.ComponentProps<typeof Sidebar> & { userRole?: number }) {
+  const { navMain, portalTitle } = getNavigationForRole(userRole ?? 0);
+
   return (
-    <Sidebar collapsible="offcanvas" {...props}>
+    <Sidebar {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton
-              className="data-[slot=sidebar-menu-button]:p-1.5!"
-              render={<a href="#" />}
-            >
-              <HugeiconsIcon icon={CommandIcon} strokeWidth={2} className="size-5!" />
-              <span className="text-base font-semibold">Acme Inc.</span>
-            </SidebarMenuButton>
+            <div className="flex flex-row justify-between">
+              <div className="w-full">
+                <SidebarMenuButton
+                  size="lg"
+                  render={
+                    <a
+                      href={
+                        (userRole ?? 0) >= 1
+                          ? "/dashboard"
+                          : "/student/dashboard"
+                      }
+                    >
+                      <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                        <HugeiconsIcon
+                          icon={LayoutBottomIcon}
+                          strokeWidth={2}
+                          className="size-4"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-0.5 leading-none">
+                        <span className="font-medium">SMS</span>
+                        <span className="text-xs">{portalTitle}</span>
+                      </div>
+                    </a>
+                  }
+                />
+              </div>
+              <div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger>
+                    <div className="flex size-8 items-center justify-center">
+                      <ChevronsUpDown className="ml-auto size-4" />
+                    </div>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+                    side="bottom"
+                    align="end"
+                    sideOffset={4}
+                  >
+                    <DropdownMenuItem>
+                      <Link href="/logout" className="w-full">
+                      <div className="flex w-full items-center justify-start gap-2">
+                        <LogOut />
+                        Log out
+                      </div>
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <SidebarGroup>
+          <SidebarMenu>
+            {navMain.map((item) => (
+              <SidebarMenuItem key={item.title}>
+                <SidebarMenuButton
+                  render={<a href={item.url} className="font-medium" />}
+                >
+                  {item.title}
+                </SidebarMenuButton>
+                {item.items?.length ? (
+                  <SidebarMenuSub>
+                    {item.items.map((subItem) => (
+                      <SidebarMenuSubItem key={subItem.title}>
+                        <SidebarMenuSubButton render={<a href={subItem.url} />}>
+                          {subItem.title}
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    ))}
+                  </SidebarMenuSub>
+                ) : null}
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={data.user} />
-      </SidebarFooter>
+      <SidebarRail />
     </Sidebar>
-  )
+  );
 }

@@ -1,10 +1,11 @@
-import { Button } from "@/components/ui/button"
-import InvoiceUnitEntry from "@/components/invoice_unit_entry"
 import Dashboard from "./dashboard/page"
+import { redirect } from "next/navigation"
 
 export default function Page() {
   return (
-    <Dashboard/>
+    <>
+    {redirect("/login")}
+    </>
   )
 }
 // }export default function Page() {
