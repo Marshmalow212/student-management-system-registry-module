@@ -80,6 +80,31 @@ docker compose up --build
 
 The compose service starts Postgres first, then runs `npm install && npm run dev` inside the app container. Live code changes are picked up through the bind mount.
 
+- Seeders running 
+```bash
+
+docker exec -it sms-nextjs-app npx prisma migrate deploy
+
+
+docker exec -it sms-nextjs-app npx prisma db seed
+
+```
+
+## Authentication Entities (Seeded)
+
+The default seed ([prisma/seeders/admin_seeder.ts](prisma/seeders/admin_seeder.ts)) provisions an Admin and two staff accounts for local development with the shared password `1234@sms`:
+
+| Email | Role | Name |
+| --- | --- | --- |
+| `alice@example.com` | `3` (Admin) | Alice |
+| `bob@example.com` | `2` (Registrar) | Bob |
+| `john@example.com` | `1` (Staff) | John |
+
+**student email id can be found using `Registrar` dashboard and password similar as shared**
+
+Replace these credentials before any non-development deployment.
+
+
 ## Local Running (Host)
 
 ```bash
@@ -130,18 +155,6 @@ npx prisma migrate dev
 # Or run the seed explicitly
 npx prisma db seed
 ```
-
-The default seed ([prisma/seeders/admin_seeder.ts](prisma/seeders/admin_seeder.ts)) provisions an Admin and two staff accounts for local development with the shared password `1234@sms`:
-
-| Email | Role | Name |
-| --- | --- | --- |
-| `alice@example.com` | `3` (Admin) | Alice |
-| `bob@example.com` | `2` (Registrar) | Bob |
-| `john@example.com` | `1` (Staff) | John |
-
-**student email id can be found using `Registrar` dashboard and password similar as shared**
-
-Replace these credentials before any non-development deployment.
 
 ## Project Layout
 
