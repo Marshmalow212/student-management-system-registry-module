@@ -49,7 +49,7 @@ A full-stack academic operations platform built on **Next.js 16 (App Router)** a
 
 ### `.env`
 
-The shipped `.env` already wires the Docker network. The relevant keys:
+The shipped `.env.example` already wires the Docker network. The relevant keys:
 
 ```env
 APP_ENV=development
@@ -62,6 +62,7 @@ DB_PASSWORD=<db-password>
 # When running via docker-compose the app reaches the db over the `sms-network`:
 DATABASE_URL="postgresql://<db-user>:<db-password>@db:5432/student_management_system?schema=public"
 ```
+run the command `cp .env.example .env` will prepare the .env file
 
 If you run Next.js on the host while Postgres stays in Docker, swap the host segment to `localhost:${DB_EXPOSE_PORT}`.
 
@@ -79,6 +80,31 @@ docker compose up --build
 - Postgres: `localhost:${DB_EXPOSE_PORT}` (defaults to `6602`)
 
 The compose service starts Postgres first, then runs `npm install && npm run dev` inside the app container. Live code changes are picked up through the bind mount.
+
+- Seeders running 
+```bash
+
+docker exec -it sms-nextjs-app npx prisma migrate deploy
+
+
+docker exec -it sms-nextjs-app npx prisma db seed
+
+```
+
+## Authentication Entities (Seeded)
+
+The default seed ([prisma/seeders/admin_seeder.ts](prisma/seeders/admin_seeder.ts)) provisions an Admin and two staff accounts for local development with the shared password `1234@sms`:
+
+| Email | Role | Name |
+| --- | --- | --- |
+| `alice@example.com` | `3` (Admin) | Alice |
+| `bob@example.com` | `2` (Registrar) | Bob |
+| `john@example.com` | `1` (Staff) | John |
+
+**student email id can be found using `Registrar` dashboard and password similar as shared**
+
+Replace these credentials before any non-development deployment.
+
 
 ## Local Running (Host)
 
@@ -130,18 +156,6 @@ npx prisma migrate dev
 # Or run the seed explicitly
 npx prisma db seed
 ```
-
-The default seed ([prisma/seeders/admin_seeder.ts](prisma/seeders/admin_seeder.ts)) provisions an Admin and two staff accounts for local development with the shared password `1234@sms`:
-
-| Email | Role | Name |
-| --- | --- | --- |
-| `alice@example.com` | `3` (Admin) | Alice |
-| `bob@example.com` | `2` (Registrar) | Bob |
-| `john@example.com` | `1` (Staff) | John |
-
-**student email id can be found using `Registrar` dashboard and password similar as shared**
-
-Replace these credentials before any non-development deployment.
 
 ## Project Layout
 
