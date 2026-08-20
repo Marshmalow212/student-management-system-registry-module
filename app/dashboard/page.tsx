@@ -15,11 +15,15 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+import { DashboardSummary } from "@/components/feature/dashboard/dashboard-summary"
 
 export default async function Page() {
   const user = await getCurrentUser()
   if (!user) {
     redirect("/login")
+  }
+  if (user.role === 0) {
+    redirect("/student/dashboard")
   }
 
   return (
@@ -43,12 +47,7 @@ export default async function Page() {
           </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4">
-          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-            <div className="aspect-video rounded-xl bg-muted/50" />
-            <div className="aspect-video rounded-xl bg-muted/50" />
-            <div className="aspect-video rounded-xl bg-muted/50" />
-          </div>
-          <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
+          <DashboardSummary role={user.role} />
         </div>
       </SidebarInset>
     </SidebarProvider>

@@ -23,6 +23,7 @@ const student = {
   name: "Student",
   role: 0,
   studentId: "S-9",
+  status: 1,
   isActive: true,
   createdAt: new Date(),
 };
@@ -61,6 +62,7 @@ describe("grades, transcripts, and reporting API", () => {
     (prisma.student.findFirst as jest.Mock).mockResolvedValue({
       id: 9,
       programmeId: 3,
+      status: 1,
     });
     (prisma.assessmentSubmission.findMany as jest.Mock).mockResolvedValue([result]);
     (prisma.assessmentSubmission.count as jest.Mock).mockResolvedValue(1);

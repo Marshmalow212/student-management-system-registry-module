@@ -40,7 +40,7 @@ describe("payment ledger API", () => {
     (prisma.studentEnrollment.findUnique as jest.Mock).mockResolvedValue({
       id: 9,
       feeTotal: "100.00",
-      status: "ACTIVE",
+      status: 1,
     });
     (prisma.paymentTransaction.create as jest.Mock).mockResolvedValue({
       id: 1,

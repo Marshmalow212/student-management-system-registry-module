@@ -9,7 +9,9 @@ import { deliverStudentOtp } from "@/lib/auth/otp";
 jest.mock("@/lib/prisma", () => ({
   prisma: {
     user: { findUnique: jest.fn(), create: jest.fn(), update: jest.fn() },
+    student: { findUnique: jest.fn(), update: jest.fn() },
     userLog: { create: jest.fn() },
+    $transaction: jest.fn(),
   },
 }));
 
@@ -58,10 +60,15 @@ describe("student authentication API", () => {
     jest.clearAllMocks();
     (hashPassword as jest.Mock).mockResolvedValue("password-hash");
     (verifyPassword as jest.Mock).mockResolvedValue(true);
+    (prisma.$transaction as jest.Mock).mockImplementation(
+      async (callback: (tx: typeof prisma) => unknown) => callback(prisma),
+    );
+    (prisma.userLog.create as jest.Mock).mockResolvedValue({ id: 1 });
   });
 
   it("registers an unverified student and never returns secrets", async () => {
     (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
+    (prisma.student.findUnique as jest.Mock).mockResolvedValue({ id: 9 });
     (prisma.user.create as jest.Mock).mockResolvedValue(student);
 
     const response = await register(request("/api/auth/student/register", {
@@ -77,7 +84,7 @@ describe("student authentication API", () => {
   });
 
   it("rejects duplicate email or student identity", async () => {
-    (prisma.user.findUnique as jest.Mock).mockResolvedValueOnce({ id: 1 }).mockResolvedValueOnce(null);
+    (prisma.user.findUnique as jest.Mock).mockResolvedValue({ id: 1 });
     const response = await register(request("/api/auth/student/register", {
       email: "student@example.com", name: "A Student", studentId: "S-7", password: "password123",
     }));
@@ -90,6 +97,7 @@ describe("student authentication API", () => {
   it("verifies a valid OTP, clears OTP state, and sets a session cookie", async () => {
     (prisma.user.findUnique as jest.Mock).mockResolvedValue(student);
     (prisma.user.update as jest.Mock).mockResolvedValue({ ...student, isVerified: true, otpHash: null });
+    (prisma.student.update as jest.Mock).mockResolvedValue({ id: 9 });
     const response = await verify(request("/api/auth/student/verify", { email: student.email, otp: "123456" }));
     const data = await response.json();
     expect(response.status).toBe(200);
