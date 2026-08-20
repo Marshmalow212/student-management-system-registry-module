@@ -49,7 +49,7 @@ A full-stack academic operations platform built on **Next.js 16 (App Router)** a
 
 ### `.env`
 
-The shipped `.env` already wires the Docker network. The relevant keys:
+The shipped `.env.example` already wires the Docker network. The relevant keys:
 
 ```env
 APP_ENV=development
@@ -62,6 +62,7 @@ DB_PASSWORD=<db-password>
 # When running via docker-compose the app reaches the db over the `sms-network`:
 DATABASE_URL="postgresql://<db-user>:<db-password>@db:5432/student_management_system?schema=public"
 ```
+run the command `cp .env.example .env` will prepare the .env file
 
 If you run Next.js on the host while Postgres stays in Docker, swap the host segment to `localhost:${DB_EXPOSE_PORT}`.
 
