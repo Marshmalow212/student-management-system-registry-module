@@ -25,35 +25,18 @@ A full-stack academic operations platform built on **Next.js 16 (App Router)** a
 | Container | Docker, docker-compose (`node:24-alpine`, `postgres:18-alpine`) |
 
 ## Core Modules
+- [Authentication](./docs/current/00-architecture.md)
+- [Student authentication](./docs/current/02-student-authentication.md)
+- [Dashboard](./docs/current/03-dashboard.md)
+- [Registry and registration](./docs/current/04-registry-registration.md)
+- [Enrollment and fees](./docs/current/05-enrollment-fees.md)
+- [Payments](./docs/current/06-payments.md)
+- [Assessments and submissions](./docs/current/07-assessments-submissions.md)
+- [Grades and transcripts](./docs/current/08-grades-transcripts.md)
+- [Account management](./docs/current/09-account-management.md)
+- [Development seed data](./docs/current/10-seed-data.md)
 
-The product is partitioned by feature, with each feature owning its `app/api/**` routes, its `components/feature/**` and `components/forms/**` surface, its `docs/feature-*.md` contract, and its migrations. The high-level modules:
 
-### 1. Authentication and Authorization
-Staff login, registration (admin-only), logout, and `me`. Issues the `sms_session` HTTP-only cookie. Public user state in Redux is limited to `id`, `email`, `name`, `role`. See [docs/feature-authentication.md](docs/feature-authentication.md) and [API_AUTH_DOCUMENTATION.md](API_AUTH_DOCUMENTATION.md).
-
-### 2. Student Authentication and OTP
-Separate lifecycle for students: `register` → `verify` (six-digit OTP, HMAC-hashed, 10-minute TTL, five-attempt limit, 60-second resend cooldown) → `login`. OTPs are persisted on `User`; `isVerified` gates the session. See [docs/feature-student-authentication.md](docs/feature-student-authentication.md).
-
-### 3. Student and Programme Registry
-Catalog of `Programme` records and a searchable directory of `Student` records. Staff and above can list and inspect; Registrar and Admin can create/update; Admin can soft-delete (`ARCHIVED` / `WITHDRAWN`). Pagination is `page` + `pageSize` (max 100); money is serialised as strings. See [docs/feature-student-programme-registry.md](docs/feature-student-programme-registry.md).
-
-### 4. Student Registration (Atomic)
-Registrar-only `POST /api/student-registrations` generates `studentUid` and enrolment reference, derives the academic year, and atomically creates the `Student` and its initial active enrolment with a fee/discount snapshot. Conditional coupon usage is claimed inside the same transaction. See [docs/feature-student-registration-api.md](docs/feature-student-registration-api.md).
-
-### 5. Enrolment and Fee Management
-`StudentEnrollment` (unique per student/programme/year) tracks lifecycle `ACTIVE → COMPLETED | CANCELLED`, fee snapshot, due date, and balance. `balance = feeTotal - sum(payments)`; overdue requires a positive balance with a past due date. Only `ACTIVE` enrolments accept payments. See [docs/feature-enrolment-fees.md](docs/feature-enrolment-fees.md) and [docs/feature-enrolment-fees-api.md](docs/feature-enrolment-fees-api.md).
-
-### 6. Payment Ledger
-Immutable `PaymentTransaction` entries with unique `reference` and unique `idempotencyKey`. Payment creation and the balance check run in a single Prisma interactive transaction; overpayment, idempotency conflicts, and non-payable enrolments return stable codes (`OVERPAYMENT`, `IDEMPOTENCY_CONFLICT`, `ENROLLMENT_NOT_PAYABLE`, `ENROLLMENT_HAS_PAYMENTS`). See [docs/feature-payment-api-plan.md](docs/feature-payment-api-plan.md) and [PAYMENT_API_DOCUMENTATION.md](PAYMENT_API_DOCUMENTATION.md).
-
-### 7. Assessment Workflow
-Programme-owned `Assessment` records with lifecycle `DRAFT → OPEN → CLOSED → RESULT`. Students submit or resubmit before the deadline / extended deadline and within the resubmission limit; staff grade and publish. Fee holds place results on `ON_HOLD` until the balance is clear. PDF upload is a two-step boundary (`POST /api/submissions/file-upload` returns a public path; finalisation cross-checks student/programme/assessment/path). See [docs/feature-assessment.md](docs/feature-assessment.md), [docs/feature-assessment-api.md](docs/feature-assessment-api.md), and [docs/feature-assessment-ui.md](docs/feature-assessment-ui.md).
-
-### 8. Grades, Transcripts, and Reporting
-`AssessmentSubmission` is the sole authority for per-assessment marks and publication. Percentage is computed at read time (`marks / maxMarks * 100`, two decimals); classification is derived (`A` 80–100, `B` 70–79.99, `C` 60–69.99, `D` 50–59.99, `F` < 50). `GET /api/transcripts` returns `NO_RESULTS` / `INCOMPLETE` / `COMPLETE`. CSV export is a client-side adapter with formula neutralisation. See [docs/feature-grades-transcripts-reporting.md](docs/feature-grades-transcripts-reporting.md), [docs/feature-grades-transcripts-reporting-api.md](docs/feature-grades-transcripts-reporting-api.md), and [docs/feature-grades-transcripts-reporting-ui.md](docs/feature-grades-transcripts-reporting-ui.md).
-
-### 9. Improvement / Stabilisation Spec
-The canonical cross-feature BRS, SRS, role matrix, and NFR list lives in [docs/feature-improvement-fix-v1.md](docs/feature-improvement-fix-v1.md). It is the source of truth for capabilities and non-functional rules (server-side authorisation, transactional mutations, bounded validation, pagination caps, decimal-string contracts).
 
 ## Environment Setup
 
@@ -156,6 +139,8 @@ The default seed ([prisma/seeders/admin_seeder.ts](prisma/seeders/admin_seeder.t
 | `bob@example.com` | `2` (Registrar) | Bob |
 | `john@example.com` | `1` (Staff) | John |
 
+**student email id can be found using `Registrar` dashboard and password similar as shared**
+
 Replace these credentials before any non-development deployment.
 
 ## Project Layout
@@ -196,7 +181,7 @@ plans/                    Internal planning artefacts
 
 ## Testing
 
-Tests live next to the routes they cover (`route.test.ts`) and exercise route handlers with Jest. See [TEST_SETUP_GUIDE.md](TEST_SETUP_GUIDE.md) for the full setup and execution guide.
+Tests live next to the routes they cover (`route.test.ts`) and exercise route handlers with Jest. See [Test Setup Guide](./TEST_SETUP_GUIDE.md) for the full setup and execution guide.
 
 ```bash
 npm test                       # run all
@@ -210,17 +195,23 @@ npm test -- --testPathPatterns="api/auth"
 - Passwords use scrypt; OTPs are HMAC-hashed before persistence.
 - Public projections never include password hashes, OTP hashes, session tokens, or raw grader credentials.
 - Decimal money and mark fields cross the API as strings to avoid JavaScript precision loss.
-- Assessment result publication is gated by `isPublished = true`; fee holds are surfaced as `ON_HOLD` instead of being silently suppressed.
+- Assessment result publication is gated by `isPublished = true`; fee holds are surfaced as `ON_HOLD` in per student results instead of being silently suppressed.
 
-## Documentation Index
+## AI Usage Summary
+- Initial Planning Blueprint and Tasks Planning 
+- Project Scaffolding and Structure Design implementation
+- Agent Based Workflow in Local: API-Development, UI-Development, API-Integration
+- Agents pass using fleet, One Agent green lights to Another Agent
+- Tools Used: Github Co-pilot Agents, Models: Mix of Paid Models of Claude, Co-pilot Free Models, Ollama- minimax-m3:cloud (amazing model as a free one but limited usage by Ollama Cloud Free models)
+- Refactoring, Jest Test Suit implementation, Documentation
 
-- [docs/feature-authentication.md](docs/feature-authentication.md), [docs/feature-authentication-api.md](docs/feature-authentication-api.md), [docs/feature-authentication-ui.md](docs/feature-authentication-ui.md)
-- [docs/feature-student-authentication.md](docs/feature-student-authentication.md), [docs/feature-student-authentication-api.md](docs/feature-student-authentication-api.md), [docs/feature-student-authentication-ui.md](docs/feature-student-authentication-ui.md)
-- [docs/feature-student-programme-registry.md](docs/feature-student-programme-registry.md), [docs/feature-student-programme-registry-api.md](docs/feature-student-programme-registry-api.md), [docs/feature-student-programme-registry-ui.md](docs/feature-student-programme-registry-ui.md)
-- [docs/feature-student-registration-api.md](docs/feature-student-registration-api.md)
-- [docs/feature-enrolment-fees.md](docs/feature-enrolment-fees.md), [docs/feature-enrolment-fees-api.md](docs/feature-enrolment-fees-api.md), [docs/feature-enrolment-fees-ui.md](docs/feature-enrolment-fees-ui.md)
-- [docs/feature-payment-api-plan.md](docs/feature-payment-api-plan.md), [docs/feature-payment-ui.md](docs/feature-payment-ui.md), [docs/PAYMENT_API_DOCUMENTATION.md](docs/PAYMENT_API_DOCUMENTATION.md), [docs/PAYMENT_API_GREENLIGHT.md](docs/PAYMENT_API_GREENLIGHT.md), [docs/PAYMENT_API_IMPLEMENTATION_SUMMARY.md](docs/PAYMENT_API_IMPLEMENTATION_SUMMARY.md), [docs/PAYMENT_COMPONENT_ARCHITECTURE.md](docs/PAYMENT_COMPONENT_ARCHITECTURE.md), [docs/PAYMENT_INTEGRATION_QUICKSTART.md](docs/PAYMENT_INTEGRATION_QUICKSTART.md), [docs/PAYMENT_UI_INTEGRATION_SUMMARY.md](docs/PAYMENT_UI_INTEGRATION_SUMMARY.md)
-- [docs/feature-assessment.md](docs/feature-assessment.md), [docs/feature-assessment-api.md](docs/feature-assessment-api.md), [docs/feature-assessment-ui.md](docs/feature-assessment-ui.md)
-- [docs/feature-grades-transcripts-reporting.md](docs/feature-grades-transcripts-reporting.md), [docs/feature-grades-transcripts-reporting-api.md](docs/feature-grades-transcripts-reporting-api.md), [docs/feature-grades-transcripts-reporting-ui.md](docs/feature-grades-transcripts-reporting-ui.md)
-- [docs/feature-improvement-fix-v1.md](docs/feature-improvement-fix-v1.md) — canonical cross-feature BRS/SRS/role matrix/NFR
-- [API_AUTH_DOCUMENTATION.md](API_AUTH_DOCUMENTATION.md), [PAYMENT_UI_COMPLETE.md](PAYMENT_UI_COMPLETE.md), [TEST_SETUP_GUIDE.md](TEST_SETUP_GUIDE.md)
+ **All AI Generated contents reviewed and validated before commiting.**
+
+## Some Future Scope - Feature Level ( As My Idea Goes On)
+- Full Admin Level User Management RBAC
+- LLM powered Grading
+- OCR/ One-time link based payment record
+
+*There are still scopes to improve every module I developed, I couldn't help but pour it a little everyday*
+
+
