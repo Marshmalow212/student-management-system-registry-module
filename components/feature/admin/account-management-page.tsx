@@ -7,8 +7,7 @@ import { fetchUsers } from "@/redux/features/admin/usersThunk";
 import {
   StaffAccountForm,
   type StaffAccountFormValues,
-} from "@/components/forms/staff-account-form";
-import { Badge } from "@/components/ui/badge";
+} from "@/components/ui/forms/staff-account-form";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -32,14 +31,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { AccountsDataTable } from "@/components/feature/tables/accounts-data-table";
 import { toast } from "@/components/ui/toast";
 
 function roleValue(value: StaffAccountFormValues["role"]) {
@@ -51,19 +43,6 @@ const ROLE_OPTIONS = [
   { value: "2", label: "Registrar" },
   { value: "3", label: "Admin" },
 ];
-
-const roleLabels: Record<number, string> = {
-  0: "Student",
-  1: "Staff",
-  2: "Registrar",
-  3: "Admin",
-};
-function roleLabel(role: number) {
-  return roleLabels[role] ?? "Unknown";
-}
-function dateLabel(value: string) {
-  return new Date(value).toLocaleDateString();
-}
 
 export function AccountManagementPage() {
   const dispatch = useAppDispatch();
@@ -167,41 +146,8 @@ export function AccountManagementPage() {
               <Skeleton className="h-10 w-full" />
               <Skeleton className="h-10 w-full" />
             </div>
-          ) : items.length === 0 ? (
-            <p className="py-10 text-center text-muted-foreground">
-              No users found for this role.
-            </p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Verified</TableHead>
-                  <TableHead>Created</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {items.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell className="font-medium">{user.name}</TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{roleLabel(user.role)}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={user.isActive ? "default" : "secondary"}>
-                        {user.isActive ? "Active" : "Inactive"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{user.isVerified ? "Yes" : "No"}</TableCell>
-                    <TableCell>{dateLabel(user.createdAt)}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <AccountsDataTable data={items} />
           )}
         </CardContent>
       </Card>

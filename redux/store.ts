@@ -7,6 +7,8 @@ import assessmentReducer from "./features/assessment/assessmentSlice";
 import adminUsersReducer from "./features/admin/usersSlice";
 import studentDashboardReducer from "./features/student/studentDashboardSlice";
 import enrollmentReducer from "./features/enrollment/enrollmentSlice";
+import staffDashboardReducer from './features/dashboard/staffDashboardSlice';
+import registrarDashboardReducer from './features/dashboard/registrarDashboardSlice';
 
 export const store = configureStore({
   reducer: {
@@ -17,6 +19,8 @@ export const store = configureStore({
     assessment: assessmentReducer,
     adminUsers: adminUsersReducer,
     studentDashboard: studentDashboardReducer,
+    staffDashboard: staffDashboardReducer,
+    registrarDashboard: registrarDashboardReducer,
     enrollment: enrollmentReducer,
   },
 })

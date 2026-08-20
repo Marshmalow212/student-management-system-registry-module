@@ -29,13 +29,9 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  GradesDataTable,
+  type GradeRow,
+} from "@/components/feature/tables/grades-data-table";
 import { downloadResultsCsv } from "./export-results";
 
 export type GradeResult = {
@@ -139,51 +135,11 @@ function ResultTable({
   results: GradeResult[];
   staff: boolean;
 }) {
-  return results.length === 0 ? (
-    <p className="py-10 text-center text-muted-foreground">
-      No published results match these filters.
-    </p>
-  ) : (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>{staff ? "Student" : "Assessment"}</TableHead>
-          <TableHead>{staff ? "Assessment" : "Subject"}</TableHead>
-          <TableHead>Marks</TableHead>
-          <TableHead>Percentage</TableHead>
-          <TableHead>Grade</TableHead>
-          <TableHead>Published</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {results.map((result) => (
-          <TableRow key={result.id}>
-            <TableCell className="font-medium">
-              {staff
-                ? `${result.studentName} (${result.studentUid})`
-                : result.assessmentTitle}
-            </TableCell>
-            <TableCell>
-              {staff ? result.assessmentTitle : result.subjectName || "-"}
-            </TableCell>
-            <TableCell>
-              {result.marks} / {result.maxMarks}
-            </TableCell>
-            <TableCell>{result.percentage}%</TableCell>
-            <TableCell>
-              <Badge
-                variant={
-                  result.classification === "F" ? "destructive" : "secondary"
-                }
-              >
-                {result.classification}
-              </Badge>
-            </TableCell>
-            <TableCell>{dateLabel(result.publishedAt)}</TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+  return (
+    <GradesDataTable
+      data={(results as unknown as GradeRow[]) || []}
+      staff={staff}
+    />
   );
 }
 
@@ -352,44 +308,7 @@ export function GradesPage({ mode }: { mode: Mode }) {
               ))}
             </div>
           ) : (
-            <>
-              <ResultTable results={results} staff={staff} />
-              <div className="flex items-center justify-between gap-3 pt-4">
-                <span className="text-sm text-muted-foreground">
-                  Page {pagination.page} of {Math.max(pagination.totalPages, 1)}{" "}
-                  · {pagination.total} published result
-                  {pagination.total === 1 ? "" : "s"}
-                </span>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={pagination.page <= 1}
-                    onClick={() =>
-                      setPagination((current) => ({
-                        ...current,
-                        page: current.page - 1,
-                      }))
-                    }
-                  >
-                    Previous
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={pagination.page >= pagination.totalPages}
-                    onClick={() =>
-                      setPagination((current) => ({
-                        ...current,
-                        page: current.page + 1,
-                      }))
-                    }
-                  >
-                    Next
-                  </Button>
-                </div>
-              </div>
-            </>
+            <ResultTable results={results} staff={staff} />
           )}
         </CardContent>
       </Card>
