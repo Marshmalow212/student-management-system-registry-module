@@ -1,3 +1,4 @@
+import { RESULT_CLASSIFICATION } from "@/app/api/results/route";
 import { z } from "zod";
 
 export const reportQuerySchema = z.object({
@@ -7,7 +8,7 @@ export const reportQuerySchema = z.object({
   studentId: z.coerce.number().int().positive().optional(),
 });
 
-export type GradeClassification = "A" | "B" | "C" | "D" | "F";
+export type GradeClassification = string & "Distinction" | "Merit" | "Pass" | "Fail";
 
 function decimal(value: unknown): number {
   const parsed = Number(value);
@@ -27,9 +28,10 @@ export function calculateGrade(marks: unknown, maxMarks: unknown): {
   const maximum = decimal(maxMarks);
   if (maximum <= 0 || score < 0 || score > maximum) throw new Error("Marks are outside the assessment range");
   const percentage = round((score / maximum) * 100);
-  const classification = percentage >= 80 ? "A" : percentage >= 70 ? "B" : percentage >= 60 ? "C" : percentage >= 50 ? "D" : "F";
+  const classification = RESULT_CLASSIFICATION(percentage) as GradeClassification;
   return { percentage: percentage.toFixed(2), classification };
 }
+
 
 export function publicGrade(result: Record<string, unknown>) {
   const grade = calculateGrade(result.marks, result.maxMarks);
@@ -41,6 +43,7 @@ export function publicGrade(result: Record<string, unknown>) {
     studentId: result.studentId,
     studentUid: result.studentUid,
     studentName: result.studentName,
+    hasOverdueBalance: Boolean(result.hasOverdueBalance),
     programmeId: result.programmeId,
     programmeName: result.programmeName,
     marks: String(result.marks),

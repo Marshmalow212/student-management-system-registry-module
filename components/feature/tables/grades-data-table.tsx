@@ -19,8 +19,9 @@ export type GradeRow = {
   marks: string;
   maxMarks: string;
   percentage: string;
-  classification: "A" | "B" | "C" | "D" | "F";
+  classification: string;
   isPublished: boolean;
+  hasOverdueBalance: boolean;
   gradedAt: string;
   publishedAt: string | null;
 };
@@ -67,7 +68,7 @@ export function getGradeColumns({
       cell: ({ row }) => (
         <Badge
           variant={
-            row.original.classification === "F" ? "destructive" : "secondary"
+            row.original.classification === "Fail" ? "destructive" : "secondary"
           }
         >
           {row.original.classification}
@@ -86,17 +87,24 @@ export function GradesDataTable({
   data,
   isLoading,
   staff,
+  hasOverdueBalance,
 }: {
   data: GradeRow[];
   isLoading?: boolean;
   staff: boolean;
+  hasOverdueBalance?: boolean;
 }) {
+  const overdue = hasOverdueBalance ?? data.some((row) => row.hasOverdueBalance);
   return (
     <DataTable
       data={data}
       columns={getGradeColumns({ staff })}
       isLoading={isLoading}
-      emptyMessage="No published results match these filters."
+      emptyMessage={
+        overdue
+          ? "Overdue payment: published results are unavailable until the outstanding balance is cleared."
+          : "No published results match these filters."
+      }
       initialPageSize={20}
     />
   );

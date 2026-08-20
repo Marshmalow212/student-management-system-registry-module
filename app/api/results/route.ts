@@ -10,7 +10,7 @@ import { currentStudent, gradeSchema } from "@/lib/assessments";
 import { publicGrade, reportQuerySchema } from "@/lib/grades";
 import { isAssessmentEligible } from "@/lib/student-status";
 
-function RESULT_CLASSIFICATION(score: number): string {
+export function RESULT_CLASSIFICATION(score: number): string {
   switch (true) {
     case score >= 70:
       return "Distinction";
@@ -45,7 +45,13 @@ const submissionResultSelect = {
       programme: { select: { name: true } },
     },
   },
-  student: { select: { studentUid: true, fullName: true } },
+  student: {
+    select: {
+      studentUid: true,
+      fullName: true,
+      hasOverdueBalance: true,
+    },
+  },
 } as const;
 function publicResult(value: Record<string, unknown>) {
   const result = value as Record<string, unknown> & {
@@ -56,7 +62,11 @@ function publicResult(value: Record<string, unknown>) {
       programmeId: number;
       programme: { name: string };
     };
-    student: { studentUid: string; fullName: string };
+    student: {
+      studentUid: string;
+      fullName: string;
+      hasOverdueBalance: boolean;
+    };
   };
   return publicGrade({
     ...result,
@@ -67,6 +77,7 @@ function publicResult(value: Record<string, unknown>) {
     programmeName: result.assessment.programme.name,
     studentUid: result.student.studentUid,
     studentName: result.student.fullName,
+    hasOverdueBalance: result.student.hasOverdueBalance,
   });
 }
 
@@ -129,6 +140,7 @@ export async function GET(request: Request): Promise<Response> {
           programmeName: result.assessment.programme.name,
           studentUid: result.student.studentUid,
           studentName: result.student.fullName,
+          hasOverdueBalance: result.student.hasOverdueBalance,
         } as unknown as Record<string, unknown>),
       ),
       pagination: {
@@ -137,6 +149,8 @@ export async function GET(request: Request): Promise<Response> {
         total,
         totalPages: Math.ceil(total / parsed.data.pageSize),
       },
+      hasOverdueBalance:
+        user.role === 0 ? Boolean(student?.hasOverdueBalance) : undefined,
     });
   } catch (error) {
     console.error("[GET /api/results] Error:", error);

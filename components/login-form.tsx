@@ -1,37 +1,40 @@
 "use client";
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
-} from "@/components/ui/field"
+  FieldSeparator,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/toast";
-  
+import Link from "next/link";
+import { redirect } from "next/navigation";
 
 export function LoginForm({
   className,
   loginHandler,
   ...props
 }: React.ComponentProps<"div"> & {
-  loginHandler: (data: Record<string, string>) => void
+  loginHandler: (data: Record<string, string>) => void;
 }) {
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const formData = new FormData(e.currentTarget);
     const email = (formData.get("email") as string | null)?.trim() || null;
-    const password = (formData.get("password") as string | null)?.trim() || null;
+    const password =
+      (formData.get("password") as string | null)?.trim() || null;
 
     if (!email || !password) {
       toast.add({
@@ -42,7 +45,7 @@ export function LoginForm({
     }
 
     loginHandler({ email, password });
-  }
+  };
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -83,10 +86,17 @@ export function LoginForm({
                   Don&apos;t have an account? <a href="/signup">Sign up</a>
                 </FieldDescription>
               </Field>
+              <FieldSeparator />
+              <Field>
+                <Button variant="outline" type="button" onClick={() => redirect('/student/login')}>
+                  Student Login
+                </Button>
+                <FieldDescription className="text-center"></FieldDescription>
+              </Field>
             </FieldGroup>
           </form>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

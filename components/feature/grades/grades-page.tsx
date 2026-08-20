@@ -47,8 +47,9 @@ export type GradeResult = {
   marks: string;
   maxMarks: string;
   percentage: string;
-  classification: "A" | "B" | "C" | "D" | "F";
+  classification: string;
   isPublished: boolean;
+  hasOverdueBalance?: boolean;
   gradedAt: string;
   publishedAt: string | null;
 };
@@ -63,6 +64,7 @@ type Transcript = {
   student: {
     studentUid: string;
     fullName: string;
+    hasOverdueBalance: boolean;
     programme?: { name: string } | null;
   };
   status: "NO_RESULTS" | "INCOMPLETE" | "COMPLETE";
@@ -131,14 +133,17 @@ function StatusMessage({ status }: { status: Transcript["status"] }) {
 function ResultTable({
   results,
   staff,
+  hasOverdueBalance,
 }: {
   results: GradeResult[];
   staff: boolean;
+  hasOverdueBalance?: boolean;
 }) {
   return (
     <GradesDataTable
       data={(results as unknown as GradeRow[]) || []}
       staff={staff}
+      hasOverdueBalance={hasOverdueBalance}
     />
   );
 }
@@ -158,6 +163,7 @@ export function GradesPage({ mode }: { mode: Mode }) {
   const [transcriptOpen, setTranscriptOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [hasOverdueBalance, setHasOverdueBalance] = useState(false);
 
   const loadResults = useCallback(async () => {
     setLoading(true);
@@ -179,6 +185,7 @@ export function GradesPage({ mode }: { mode: Mode }) {
           (result) => result.isPublished === true,
         ),
       );
+      setHasOverdueBalance(Boolean(response.data.hasOverdueBalance));
       setPagination(response.data.pagination);
     } catch (reason) {
       setError(errorMessage(reason));
@@ -200,6 +207,9 @@ export function GradesPage({ mode }: { mode: Mode }) {
         params: staff ? { studentId: studentId || undefined } : undefined,
       });
       setTranscript(response.data.data);
+      setHasOverdueBalance(
+        Boolean(response.data.data.student?.hasOverdueBalance),
+      );
       setTranscriptOpen(true);
     } catch (reason) {
       setError(errorMessage(reason));
@@ -308,7 +318,11 @@ export function GradesPage({ mode }: { mode: Mode }) {
               ))}
             </div>
           ) : (
-            <ResultTable results={results} staff={staff} />
+            <ResultTable
+              results={results}
+              staff={staff}
+              hasOverdueBalance={hasOverdueBalance}
+            />
           )}
         </CardContent>
       </Card>
@@ -386,7 +400,13 @@ export function GradesPage({ mode }: { mode: Mode }) {
                 </div>
               </div>
               <StatusMessage status={transcript.status} />
-              <ResultTable results={displayedTranscriptResults} staff={false} />
+              <ResultTable
+                results={displayedTranscriptResults}
+                staff={false}
+                hasOverdueBalance={Boolean(
+                  transcript.student.hasOverdueBalance,
+                )}
+              />
               <div className="flex justify-end">
                 <Button
                   type="button"

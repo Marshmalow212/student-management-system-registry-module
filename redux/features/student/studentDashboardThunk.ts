@@ -9,6 +9,9 @@ export type StudentDashboardSummary = {
   submissionCount: number;
   overdueSubmissionCount: number;
   lastResultGrade: string | null;
+  paidTotal: string;
+  hasOverdueBalance: boolean;
+  lastDueDate: string | null;
 };
 
 export const fetchStudentDashboard = createAsyncThunk<

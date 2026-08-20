@@ -352,7 +352,7 @@ describe("assessment workflow API", () => {
         marks: "82.50",
         maxMarks: "100.00",
         percentage: "82.50",
-        classification: "A",
+        classification: "Distinction",
         isPublished: false,
       }),
     );
@@ -382,7 +382,7 @@ describe("assessment workflow API", () => {
       assessmentId: 11,
       studentId: 4,
       marks: "82.50",
-      classification: "A",
+      classification: "Distinction",
       isPublished: true,
       publishedAt: new Date("2030-01-02"),
     });
