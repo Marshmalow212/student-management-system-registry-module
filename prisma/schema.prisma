@@ -107,7 +107,7 @@ model StudentEnrollment {
   feeSnapshot      Decimal?  @db.Decimal(12, 2)
   discountSnapshot Decimal?  @db.Decimal(12, 2)
   feeTotal         Decimal   @db.Decimal(12, 2)
-  dueDate          DateTime? @db.Date
+  dueDate          DateTime? @default(now())
   createdById      Int
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt

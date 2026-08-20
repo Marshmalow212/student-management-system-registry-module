@@ -4,6 +4,9 @@ import { hashPassword } from "@/lib/auth/password";
 import { UserRole } from "@/lib/auth/roles";
 
 async function adminUserSeeder(prismaOrm: PrismaOrm): Promise<void> {
+  try {
+
+  
   const commonPass = "1234@sms";
   let newAdmin = {
     email: "alice@example.com",
@@ -28,43 +31,14 @@ async function adminUserSeeder(prismaOrm: PrismaOrm): Promise<void> {
   const ipAddress = "server terminal";
   const userAgent = "seeder script";
 
-  // Create user
-  const newUser = await prismaOrm.user.create({
-    data: {
-      email: newAdmin.email,
-      name: newAdmin.name,
-      passwordHash,
-      role: newAdmin.role,
-      isActive: true,
-    },
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      role: true,
-    },
-  });
-  // Log registration
-  await prismaOrm.userLog.create({
-    data: {
-      userId: newUser.id,
-      eventType: LogEvent.REGISTER,
-      ipAddress,
-      userAgent,
-      metadata: {
-        email: newAdmin.email,
-        role: newAdmin.role,
-      },
-    },
-  });
+  await prismaOrm.$transaction(async (tx) => {
 
-  newStaffs.forEach(async (staff) => {
-    const newStaffUser = await prismaOrm.user.create({
+    const newUser = await prismaOrm.user.create({
       data: {
-        email: staff.email,
-        name: staff.name,
+        email: newAdmin.email,
+        name: newAdmin.name,
         passwordHash,
-        role: staff.role,
+        role: newAdmin.role,
         isActive: true,
       },
       select: {
@@ -77,19 +51,58 @@ async function adminUserSeeder(prismaOrm: PrismaOrm): Promise<void> {
     // Log registration
     await prismaOrm.userLog.create({
       data: {
-        userId: newStaffUser.id,
+        userId: newUser.id,
         eventType: LogEvent.REGISTER,
         ipAddress,
         userAgent,
         metadata: {
-          email: newStaffUser.email,
-          role: newStaffUser.role,
+          email: newAdmin.email,
+          role: newAdmin.role,
         },
       },
     });
-  });
+  
+    newStaffs.forEach(async (staff) => {
+      const newStaffUser = await prismaOrm.user.create({
+        data: {
+          email: staff.email,
+          name: staff.name,
+          passwordHash,
+          role: staff.role,
+          isActive: true,
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+        },
+      });
+      // Log registration
+      await prismaOrm.userLog.create({
+        data: {
+          userId: newStaffUser.id,
+          eventType: LogEvent.REGISTER,
+          ipAddress,
+          userAgent,
+          metadata: {
+            email: newStaffUser.email,
+            role: newStaffUser.role,
+          },
+        },
+      });
+    });
+  })
+  // Created user
+  const newUser = [
+    ...newStaffs,
+    newAdmin
+  ]
 
   console.log("Admin Seeder Completed", newUser);
+  }catch (error) {
+    console.error("Error seeding admin user:", error);
+  }
 }
 
 export { adminUserSeeder };
