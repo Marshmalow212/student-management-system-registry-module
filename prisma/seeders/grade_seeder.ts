@@ -6,6 +6,7 @@ const SUBMISSION_STATUS_GRADED = 2;
 const RESULT_STATUS_ON_HOLD = 2;
 const RESULT_STATUS_PUBLISHED = 3;
 const SEEDED_PROGRAMME_IDS = [1, 2, 3] as const;
+const LOCAL_ASSET_PATH = "/asset/assessment-lorem-ipsum.pdf";
 
 function resultClassification(score: number): string {
   switch (true) {
@@ -121,7 +122,7 @@ async function gradeSeeder(prismaOrm: PrismaOrm): Promise<void> {
             submittedAt: gradedAt,
             status: SUBMISSION_STATUS_GRADED,
             resubmissions: 0,
-            file_path: `/uploads/0e90a4db-28a4-4884-8742-0cba7a9dddd2.pdf`,
+            file_path: LOCAL_ASSET_PATH,
             marks,
             classification,
             resultStatus,
