@@ -23,6 +23,7 @@ const student = {
   name: "Student",
   role: 0,
   studentId: "S-9",
+  status: 1,
   isActive: true,
   createdAt: new Date(),
 };
@@ -61,6 +62,7 @@ describe("grades, transcripts, and reporting API", () => {
     (prisma.student.findFirst as jest.Mock).mockResolvedValue({
       id: 9,
       programmeId: 3,
+      status: 1,
     });
     (prisma.assessmentSubmission.findMany as jest.Mock).mockResolvedValue([result]);
     (prisma.assessmentSubmission.count as jest.Mock).mockResolvedValue(1);
@@ -69,9 +71,9 @@ describe("grades, transcripts, and reporting API", () => {
   it("calculates rounded percentages and fixed classification bands", () => {
     expect(calculateGrade("79.995", "100")).toEqual({
       percentage: "80.00",
-      classification: "A",
+      classification: "Distinction",
     });
-    expect(calculateGrade("49.99", "100").classification).toBe("F");
+    expect(calculateGrade("49.99", "100").classification).toBe("Pass");
   });
 
   it("forces student result reads to their own published rows and returns export-safe fields", async () => {
@@ -94,7 +96,7 @@ describe("grades, transcripts, and reporting API", () => {
         marks: "82.50",
         maxMarks: "100.00",
         percentage: "82.50",
-        classification: "A",
+        classification: "Distinction",
       }),
     );
     expect(body.data[0].passwordHash).toBeUndefined();
@@ -115,7 +117,7 @@ describe("grades, transcripts, and reporting API", () => {
     const body = await response.json();
     expect(response.status).toBe(200);
     expect(body.data.status).toBe("INCOMPLETE");
-    expect(body.data.results[0].classification).toBe("A");
+    expect(body.data.results[0].classification).toBe("Distinction");
   });
 
   it("rejects a student transcript request for another student", async () => {

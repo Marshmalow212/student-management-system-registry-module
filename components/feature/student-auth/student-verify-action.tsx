@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "@/components/ui/toast";
-import { StudentOtpForm } from "@/components/forms/student-otp-form";
+import { StudentOtpForm } from "@/components/ui/forms/student-otp-form";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { selectAuth } from "@/redux/features/auth/authSlice";
 import {

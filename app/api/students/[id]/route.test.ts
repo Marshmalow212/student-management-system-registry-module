@@ -1,6 +1,6 @@
 import { GET, PATCH, DELETE } from "@/app/api/students/[id]/route";
 import { prisma } from "@/lib/prisma";
-import { requireRegistrar } from "@/lib/auth-guards";
+import { requireRegistrar, requireRole } from "@/lib/auth-guards";
 
 jest.mock("@/lib/prisma", () => ({
   prisma: {
@@ -9,12 +9,18 @@ jest.mock("@/lib/prisma", () => ({
     user: { findFirst: jest.fn() },
   },
 }));
-jest.mock("@/lib/auth-guards", () => ({ requireRegistrar: jest.fn() }));
+jest.mock("@/lib/auth-guards", () => ({
+  requireRegistrar: jest.fn(),
+  requireRole: jest.fn(),
+}));
 
 describe("student registry detail API", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (requireRegistrar as jest.Mock).mockResolvedValue({
+      user: { id: 1, role: 3 },
+    });
+    (requireRole as jest.Mock).mockResolvedValue({
       user: { id: 1, role: 3 },
     });
   });
@@ -77,22 +83,22 @@ describe("student registry detail API", () => {
   it("blocks reactivation after withdrawal", async () => {
     (prisma.student.findFirst as jest.Mock).mockResolvedValue({
       id: 1,
-      status: "WITHDRAWN",
+      status: 0,
     });
     const response = await PATCH(
       new Request("http://localhost", {
         method: "PATCH",
-        body: JSON.stringify({ status: "ACTIVE" }),
+        body: JSON.stringify({ status: 1 }),
       }),
       { params: Promise.resolve({ id: "1" }) },
     );
     expect(response.status).toBe(409);
-    expect((await response.json()).code).toBe("INVALID_STATUS_TRANSITION");
+    expect((await response.json()).code).toBe("STATUS_CHANGE_REQUIRES_ENROLLMENT");
   });
   it("soft deletes a student as withdrawn", async () => {
     (prisma.student.findFirst as jest.Mock).mockResolvedValue({
       id: 1,
-      status: "ACTIVE",
+      status: 1,
     });
     (prisma.student.update as jest.Mock).mockResolvedValue({
       id: 1,
@@ -106,13 +112,13 @@ describe("student registry detail API", () => {
     expect(response.status).toBe(200);
     expect(prisma.student.update).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ status: "WITHDRAWN" }),
+        data: expect.objectContaining({ status: 0 }),
       }),
     );
   });
 
   it("rejects withdrawal requests from non-admin users", async () => {
-    (requireRegistrar as jest.Mock).mockResolvedValue({
+    (requireRole as jest.Mock).mockResolvedValue({
       user: null,
       error: Response.json(
         { error: "Forbidden", code: "FORBIDDEN" },

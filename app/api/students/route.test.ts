@@ -31,7 +31,7 @@ describe("student registry collection API", () => {
     (prisma.student.count as jest.Mock).mockResolvedValue(1);
     const response = await GET(
       new Request(
-        "http://localhost/api/students?search=student&status=ACTIVE&programmeId=4&pageSize=5",
+        "http://localhost/api/students?search=student&status=1&programmeId=4&pageSize=5",
       ),
     );
     const body = await response.json();

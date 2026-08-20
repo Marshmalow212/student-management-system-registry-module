@@ -28,19 +28,17 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  RegistryDataTable,
+  type RegistryRow,
+} from "@/components/feature/tables/registry-data-table";
 import {
   ProgrammeRegistryForm,
-  StudentRegistrationForm,
   type ProgrammeFormValues,
+} from "@/components/ui/forms/programme-registry-form";
+import {
+  StudentRegistryRegistrationForm,
   type StudentRegistrationFormValues,
-} from "@/components/forms/registry-forms";
+} from "@/components/ui/forms/student-registry-registration-form";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { clearRegistration } from "@/redux/features/registration/registrationSlice";
 import { registerStudent } from "@/redux/features/registration/registrationThunk";
@@ -63,7 +61,9 @@ function statusLabel(value: number | string) {
   if (typeof value === "string") {
     return value;
   }
-  return STUDENT_STATUS_LABEL[value];
+  return STUDENT_STATUS_LABEL[
+    value as keyof typeof STUDENT_STATUS_LABEL
+  ] ?? String(value);
 }
 const detailLabel: Record<string, string> = {
   studentUid: "Student ID",
@@ -339,58 +339,14 @@ export function RegistryPage({
               <Skeleton className="h-10 w-full" />
             </div>
           ) : items.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  {columns.map((column) => (
-                    <TableHead key={column}>{column}</TableHead>
-                  ))}
-                  <TableHead>
-                    <span className="sr-only">Actions</span>
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody className="overflow-auto">
-                {items.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell>{label(item.studentUid ?? item.name)}</TableCell>
-                    <TableCell>{label(item.fullName ?? item.fee)}</TableCell>
-                    <TableCell>{label(item.email ?? item.discount)}</TableCell>
-                    {kind === "students" && (
-                      <TableCell>
-                        {label(
-                          (item.programme as { name?: string } | null)?.name,
-                        )}
-                      </TableCell>
-                    )}
-                    <TableCell>
-                      <Badge variant={"default"}>
-                        {statusLabel(item.status)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => void view(item)}
-                      >
-                        View
-                      </Button>
-                      {canDelete && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          disabled={isSaving}
-                          onClick={() => setArchiveTarget(item)}
-                        >
-                          Archive
-                        </Button>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <RegistryDataTable
+              data={items as unknown as RegistryRow[]}
+              isLoading={isLoading}
+              kind={kind}
+              canDelete={canDelete}
+              onView={(row) => view(row as unknown as RegistryItem)}
+              onArchive={(row) => setArchiveTarget(row as unknown as RegistryItem)}
+            />
           ) : (
             <p className="py-8 text-center text-sm text-muted-foreground">
               No students registered yet.
@@ -414,7 +370,7 @@ export function RegistryPage({
             </DialogDescription>
           </DialogHeader>
           {kind === "students" ? (
-            <StudentRegistrationForm
+            <StudentRegistryRegistrationForm
               programmes={programmes}
               onSubmit={register}
               onCancel={closeForm}

@@ -36,19 +36,18 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  EnrollmentsDataTable,
+  type EnrollmentRow,
+} from "@/components/feature/tables/enrollments-data-table";
+import {
+  PaymentsDataTable,
+  type PaymentRow,
+} from "@/components/feature/tables/payments-data-table";
 import {
   EnrollmentForm,
-  PaymentForm,
   type EnrollmentFormValues,
-  type PaymentFormValues,
-} from "@/components/forms/enrollment-forms";
+} from "@/components/ui/forms/enrollment-form";
+import { PaymentForm, type PaymentFormValues } from "@/components/ui/forms/payment-form";
 
 type Enrollment = {
   id: number;
@@ -393,97 +392,22 @@ export function EnrollmentPage({ role }: { role: number }) {
                 <Skeleton key={value} className="h-10 w-full" />
               ))}
             </div>
-          ) : visibleItems.length === 0 ? (
-            <p className="py-10 text-center text-muted-foreground">
-              No matching Enrollments.
-            </p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Reference</TableHead>
-                  <TableHead>Student</TableHead>
-                  <TableHead>Programme</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Overdue Balance</TableHead>
-                  <TableHead>Due Date</TableHead>
-                  <TableHead>
-                    <span className="sr-only">Actions</span>
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {visibleItems.map((item) => (
-                  <TableRow
-                    key={item.id}
-                    className="cursor-pointer"
-                    tabIndex={0}
-                    onClick={() => void loadDetail(item)}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter") void loadDetail(item);
-                    }}
-                  >
-                    <TableCell className="font-medium">
-                      {item.reference}
-                    </TableCell>
-                    <TableCell>{item.student.fullName}</TableCell>
-                    <TableCell>{item.programme.name}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          item.status === 1 ? "default" : "secondary"
-                        }
-                      >
-                        {statusLabel(item.status)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {money(item.balance.balance)}
-                      {item.balance.overdue && (
-                        <Badge variant="destructive" className="ms-2">
-                          Overdue
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>{dateLabel(item.dueDate)}</TableCell>
-                    <TableCell onClick={(event) => event.stopPropagation()}>
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={() => void loadDetail(item)}
-                        >
-                          Details
-                        </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          disabled={item.status !== 1 || saving}
-                          onClick={() => {
-                            setPaymentDialogEnrollment(item);
-                            setPaymentDialogOpen(true);
-                          }}
-                        >
-                          Add Payment
-                        </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="secondary"
-                          onClick={() => {
-                            router.push(`/dashboard/payments?enrollmentId=${item.id}`);
-                          }}
-                        >
-                          Payment History
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <EnrollmentsDataTable
+              data={visibleItems as unknown as EnrollmentRow[]}
+              isLoading={loading}
+              saving={saving}
+              onDetails={(row) => loadDetail(row as unknown as Enrollment)}
+              onAddPayment={(enrollment) => {
+                setPaymentDialogEnrollment(enrollment as unknown as Enrollment);
+                setPaymentDialogOpen(true);
+              }}
+              onPaymentHistory={(enrollment) => {
+                router.push(
+                  `/dashboard/payments?enrollmentId=${enrollment.id}`,
+                );
+              }}
+            />
           )}
         </CardContent>
       </Card>
@@ -636,28 +560,10 @@ export function EnrollmentPage({ role }: { role: number }) {
                       No payments recorded.
                     </p>
                   ) : (
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Reference</TableHead>
-                          <TableHead>Amount</TableHead>
-                          <TableHead>Currency</TableHead>
-                          <TableHead>Payment Date</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {payments.map((payment) => (
-                          <TableRow key={payment.id}>
-                            <TableCell>{payment.reference}</TableCell>
-                            <TableCell>{payment.amount}</TableCell>
-                            <TableCell>{payment.currency}</TableCell>
-                            <TableCell>
-                              {new Date(payment.paymentDate).toLocaleString()}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                    <PaymentsDataTable
+                      data={payments as PaymentRow[]}
+                      isLoading={detailLoading}
+                    />
                   )}
                 </div>
               </>

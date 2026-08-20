@@ -28,7 +28,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   PaymentForm,
   type PaymentFormValues,
-} from "@/components/forms/payment-form";
+} from "@/components/ui/forms/payment-form";
 import { PaymentHistory } from "./payment-history";
 import { BalanceWidget } from "./balance-widget";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";

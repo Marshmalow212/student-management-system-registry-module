@@ -25,7 +25,13 @@ const transcriptSelect = {
       programme: { select: { name: true } },
     },
   },
-  student: { select: { studentUid: true, fullName: true } },
+  student: {
+    select: {
+      studentUid: true,
+      fullName: true,
+      hasOverdueBalance: true,
+    },
+  },
 } as const;
 
 export async function GET(request: Request): Promise<Response> {
@@ -77,6 +83,7 @@ export async function GET(request: Request): Promise<Response> {
           id: true,
           studentUid: true,
           fullName: true,
+          hasOverdueBalance: true,
           programme: { select: { id: true, name: true } },
         },
       }),
@@ -98,6 +105,7 @@ export async function GET(request: Request): Promise<Response> {
         programmeName: result.assessment.programme.name,
         studentUid: result.student.studentUid,
         studentName: result.student.fullName,
+        hasOverdueBalance: result.student.hasOverdueBalance,
       } as unknown as Record<string, unknown>),
     );
     const totalMarks = results.reduce(

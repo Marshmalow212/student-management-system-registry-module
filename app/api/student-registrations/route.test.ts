@@ -6,7 +6,7 @@ jest.mock("@/lib/prisma", () => ({
   prisma: {
     programme: { findFirst: jest.fn(), updateMany: jest.fn() },
     student: { create: jest.fn() },
-    studentEnrollment: { create: jest.fn() },
+    studentEnrollment: { findFirst: jest.fn(), create: jest.fn() },
     $transaction: jest.fn(),
   },
 }));
@@ -14,7 +14,6 @@ jest.mock("@/lib/auth-guards", () => ({ requireRegistrar: jest.fn() }));
 
 const payload = {
   fullName: " Ada Lovelace ",
-  email: " ADA@EXAMPLE.COM ",
   dateOfBirth: "2000-12-10",
   programmeId: 4,
 };
@@ -48,6 +47,7 @@ describe("student registration API", () => {
       async (callback: (tx: typeof prisma) => unknown) => callback(prisma),
     );
     (prisma.programme.findFirst as jest.Mock).mockResolvedValue(programme);
+    (prisma.studentEnrollment.findFirst as jest.Mock).mockResolvedValue(null);
     (prisma.programme.updateMany as jest.Mock).mockResolvedValue({ count: 1 });
     (prisma.student.create as jest.Mock).mockImplementation(async (args) => ({
       id: studentId++,
@@ -68,11 +68,11 @@ describe("student registration API", () => {
     expect(response.status).toBe(201);
     expect(body.data.student).toMatchObject({
       fullName: "Ada Lovelace",
-      email: "ada@example.com",
+      email: "sms_2026_40001@example.edu",
       academicYear: 2026,
       programmeId: 4,
     });
-    expect(body.data.student.studentUid).toMatch(/^STU-/);
+    expect(body.data.student.studentUid).toMatch(/^SMS-2026-/);
     expect(body.data.enrollment).toMatchObject({
       enrolledYear: 2026,
       feeSnapshot: "1250.00",
@@ -87,9 +87,12 @@ describe("student registration API", () => {
   });
 
   it("generates distinct student UIDs and enrolment references for separate registrations", async () => {
+    (prisma.studentEnrollment.findFirst as jest.Mock)
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ student: { studentUid: "SMS-2026-40001" } });
     const first = await POST(request());
     const second = await POST(
-      request({ ...payload, email: "second@example.com" }),
+      request({ ...payload, fullName: "Grace Hopper" }),
     );
 
     const [firstBody, secondBody] = await Promise.all([

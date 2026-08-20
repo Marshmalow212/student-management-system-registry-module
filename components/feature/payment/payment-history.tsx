@@ -7,14 +7,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -28,6 +20,10 @@ import {
 } from "@/components/ui/dialog";
 import { useState } from "react";
 import type { Payment } from "@/types/payment";
+import {
+  PaymentHistoryDataTable,
+  type PaymentHistoryRow,
+} from "@/components/feature/tables/payment-history-data-table";
 
 type PaymentHistoryProps = {
   payments: Payment[];
@@ -92,58 +88,12 @@ export function PaymentHistory({
               No payments found
             </p>
           ) : (
-            <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Reference</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Payment Date</TableHead>
-                    {isStaff && <TableHead>Student</TableHead>}
-                    {isStaff && <TableHead>Programme</TableHead>}
-                    <TableHead>Enrollment ID</TableHead>
-                    {isStaff && <TableHead>Actions</TableHead>}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {payments.map((payment) => (
-                    <TableRow key={payment.id}>
-                      <TableCell className="font-medium">
-                        {payment.reference}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary">
-                          {formatMoney(payment.amount, payment.currency)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{formatDate(payment.paymentDate)}</TableCell>
-                      {isStaff && (
-                        <TableCell>
-                          {payment.enrollment?.student?.fullName || "-"}
-                        </TableCell>
-                      )}
-                      {isStaff && (
-                        <TableCell>
-                          {payment.enrollment?.programme?.name || "-"}
-                        </TableCell>
-                      )}
-                      <TableCell>
-                        <code className="text-xs">{payment.enrollmentId}</code>
-                      </TableCell>
-                      {isStaff && (
-                        <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleViewDetails(payment)}
-                          >
-                            View Details
-                          </Button>
-                        </TableCell>
-                      )}
-                    </TableRow>
-                  ))}
-                </TableBody>
-            </Table>
+            <PaymentHistoryDataTable
+              data={payments as PaymentHistoryRow[]}
+              isLoading={false}
+              isStaff={isStaff}
+              onViewDetails={handleViewDetails}
+            />
           )}
         </CardContent>
       </Card>

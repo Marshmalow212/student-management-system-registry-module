@@ -7,11 +7,9 @@ import { AxiosInstance } from "@/lib/axios-client";
 import { toast } from "@/components/ui/toast";
 import {
   AssessmentForm,
-  GradeForm,
   type AssessmentFormValues,
-  type GradeFormValues,
-  type SubmissionFormValues,
-} from "@/components/forms/assessment-forms";
+} from "@/components/ui/forms/assessment-form";
+import { GradeForm, type GradeFormValues } from "@/components/ui/forms/grade-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,13 +36,14 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  AssessmentsDataTable,
+  type AssessmentRow,
+} from "@/components/feature/tables/assessments-data-table";
+import {
+  SubmissionsDataTable,
+  type SubmissionRow,
+  type SubmissionResult,
+} from "@/components/feature/tables/submissions-data-table";
 import AssessmentUploader from "./assessment-upload";
 import Link from "next/link";
 
@@ -462,62 +461,12 @@ export function AssessmentPage({ mode }: { mode: Mode }) {
                 <Skeleton key={value} className="h-10 w-full" />
               ))}
             </div>
-          ) : visible.length === 0 ? (
-            <p className="py-10 text-center text-muted-foreground">
-              No assessments found.
-            </p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Subject</TableHead>
-                  <TableHead>Due</TableHead>
-                  <TableHead>Maximum</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {visible.map((item) => (
-                  <TableRow
-                    key={item.id}
-                    tabIndex={0}
-                    className="cursor-pointer"
-                  >
-                    <TableCell className="font-medium">{item.title}</TableCell>
-                    <TableCell>{item.subjectName || "-"}</TableCell>
-                    <TableCell>{dateLabel(item.dueDate)}</TableCell>
-                    <TableCell>{item.maxMarks}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          item.status === "OPEN"
-                            ? "default"
-                            : item.status === "CLOSED" ||
-                                item.status === "RESULT"
-                              ? "secondary"
-                              : "outline"
-                        }
-                      >
-                        {item.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Button onClick={() => void selectAssessment(item)}>
-                        Details
-                      </Button>
-                      {/* {item.status === "OPEN" &&
-                        new Date(item.dueDate) > new Date() && (
-                          <Button onClick={() => setShowSubmissionForm(true)}>
-                            Submit work
-                          </Button>
-                        )} */}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <AssessmentsDataTable
+              data={visible as unknown as AssessmentRow[]}
+              isLoading={loading}
+              onDetails={(row) => selectAssessment(row as unknown as Assessment)}
+            />
           )}
         </CardContent>
       </Card>
@@ -593,97 +542,13 @@ export function AssessmentPage({ mode }: { mode: Mode }) {
                           No submissions yet.
                         </p>
                       ) : (
-                        <Table>
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Student ID</TableHead>
-                              <TableHead>Submitted</TableHead>
-                              <TableHead>Status</TableHead>
-                              <TableHead>Attachment</TableHead>
-                              <TableHead>Result</TableHead>
-                              <TableHead>
-                                <span className="sr-only">Actions</span>
-                              </TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {selected?.submissions?.map((submission) => {
-                              console.log("submission", submission);
-                              const result = results.find(
-                                (item) => item.submissionId === submission.id,
-                              );
-                              return (
-                                <TableRow key={submission.id}>
-                                  <TableCell>{submission.studentId}</TableCell>
-                                  <TableCell>
-                                    {dateLabel(
-                                      submission.submittedAt as string,
-                                    )}
-                                    {submission.isLate && (
-                                      <Badge
-                                        variant="destructive"
-                                        className="ms-2"
-                                      >
-                                        Late
-                                      </Badge>
-                                    )}
-                                  </TableCell>
-                                  <TableCell>
-                                    <Badge variant="outline">
-                                      {
-                                        STUDENT_SUBMISSION_STATUS[
-                                          submission.status
-                                        ]
-                                      }
-                                    </Badge>
-                                  </TableCell>
-                                  <TableCell>
-                                    {submission.file_path ? (
-                                      <Link
-                                        href={submission.file_path}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                      >
-                                        View Submission
-                                      </Link>
-                                    ) : (
-                                      "-"
-                                    )}
-                                  </TableCell>
-                                  <TableCell>
-                                    {result
-                                      ? `${result.marks}${result.classification ? ` (${result.classification})` : ""}`
-                                      : ""}
-                                    {submission.status === 2 &&
-                                      submission.marks &&
-                                      `${submission.marks} (${submission.classification || ""})`}
-                                  </TableCell>
-                                  <TableCell className="flex gap-2">
-                                    <Button
-                                      size="sm"
-                                      disabled={!!result || saving}
-                                      onClick={() => setGrading(submission)}
-                                    >
-                                      Grade
-                                    </Button>
-                                    {result && !result.isPublished && (
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        disabled={saving}
-                                        onClick={() =>
-                                          void publishResult(result)
-                                        }
-                                      >
-                                        Publish result
-                                      </Button>
-                                    )}
-                                  </TableCell>
-                                </TableRow>
-                              );
-                            })}
-                          </TableBody>
-                        </Table>
+                        <SubmissionsDataTable
+                          data={(selected?.submissions || []) as unknown as SubmissionRow[]}
+                          results={results as unknown as SubmissionResult[]}
+                          saving={saving}
+                          onGrade={(submission) => setGrading(submission as unknown as Submission)}
+                          onPublish={(result) => publishResult(result as unknown as Result)}
+                        />
                       )}
                     </div>
                   </>

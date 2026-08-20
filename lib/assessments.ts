@@ -152,6 +152,7 @@ export async function currentStudent(user: AuthenticatedUser) {
       id: true,
       programmeId: true,
       status: true,
+      hasOverdueBalance: true,
       enrollments: {
         where: { status: StudentEnrollmentStatus.ENROLLED },
         orderBy: { createdAt: "desc" },

@@ -1,6 +1,6 @@
 "use client";
 
-import { AssessmentSubmissionForm } from "@/components/forms/assessment-submission-form";
+import { AssessmentSubmissionForm } from "@/components/ui/forms/assessment-submission-form";
 import { AxiosInstance } from "@/lib/axios-client";
 
 export default function StudentAssessmentSubmissionPage() {

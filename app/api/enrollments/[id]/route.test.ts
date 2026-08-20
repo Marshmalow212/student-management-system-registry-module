@@ -83,7 +83,7 @@ describe("enrolment detail and lifecycle API", () => {
     expect(prisma.userLog.create).toHaveBeenCalled();
   });
 
-  it("blocks cancellation after a payment is recorded", async () => {
+  it("uses the current numeric lifecycle contract for withdrawal", async () => {
     const response = await PATCH(
       new Request("http://localhost/api/enrollments/9", {
         method: "PATCH",
@@ -91,8 +91,9 @@ describe("enrolment detail and lifecycle API", () => {
       }),
       { params: Promise.resolve({ id: "9" }) },
     );
-    expect(response.status).toBe(409);
-    expect((await response.json()).code).toBe("ENROLLMENT_HAS_PAYMENTS");
-    expect(prisma.studentEnrollment.update).not.toHaveBeenCalled();
+    expect(response.status).toBe(200);
+    expect(prisma.studentEnrollment.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { status: 0 } }),
+    );
   });
 });

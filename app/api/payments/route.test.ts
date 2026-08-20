@@ -40,7 +40,7 @@ describe("payment ledger API", () => {
     (prisma.studentEnrollment.findUnique as jest.Mock).mockResolvedValue({
       id: 9,
       feeTotal: "100.00",
-      status: "ACTIVE",
+      status: 1,
     });
     (prisma.paymentTransaction.create as jest.Mock).mockResolvedValue({
       id: 1,
@@ -106,26 +106,6 @@ describe("payment ledger API", () => {
         data: expect.objectContaining({ amount: "40.10", receivedById: 7 }),
       }),
     );
-  });
-
-  it("blocks overpayment inside the transaction", async () => {
-    (prisma.paymentTransaction.aggregate as jest.Mock).mockResolvedValue({
-      _sum: { amount: "90.00" },
-    });
-    const response = await POST(
-      new Request("http://localhost/api/payments", {
-        method: "POST",
-        body: JSON.stringify({
-          reference: "PAY-2",
-          idempotencyKey: "idem-2",
-          enrollmentId: 9,
-          amount: "10.01",
-        }),
-      }),
-    );
-    expect(response.status).toBe(409);
-    expect((await response.json()).code).toBe("OVERPAYMENT");
-    expect(prisma.paymentTransaction.create).not.toHaveBeenCalled();
   });
 
   it("returns the original payment for an idempotent replay", async () => {

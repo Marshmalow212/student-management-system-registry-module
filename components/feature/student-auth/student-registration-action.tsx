@@ -5,7 +5,7 @@ import { toast } from "@/components/ui/toast";
 import {
   StudentRegistrationForm,
   type StudentRegistrationValues,
-} from "@/components/forms/student-registration-form";
+} from "@/components/ui/forms/student-account-registration-form";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { selectAuth } from "@/redux/features/auth/authSlice";
 import { studentRegisterThunk } from "@/redux/features/auth/authThunk";
